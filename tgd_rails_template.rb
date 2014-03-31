@@ -18,8 +18,8 @@
 # Add this current directory and the the rails_root dir to the
 # beginning of of the path that will be searched for files.
 def source_paths
-#     [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
-    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
+    [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
+#    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
     Array(super)
   # Array(super) will be rvm dir for app templates, .rvm/gems/ruby-2.0.0-p353/gems/railties-4.0.3/lib/rails/generators/rails/app/templates
 end
@@ -28,7 +28,7 @@ end
 # Create .rvmrc
 ###################################
 if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?")
-  template('./rvmrc.tt','./.rvmrc', {app_name: app_name})
+  template('rvmrc.tt','.rvmrc', {app_name: app_name})
 else
   puts "Using the default gemset"
   run(". ${rvm_path:-$HOME/.rvm}/environments/default")
@@ -162,3 +162,8 @@ rake("db:migrate")
 git :init
 git add: "."
 git commit: %Q{ -m "Initial commit"}
+
+
+# require 'ocktokit'
+# client = Octokit::Client.new(:access_token => self.access_token)
+# user = self.client.user

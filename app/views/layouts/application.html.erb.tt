@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= app_name.humanize %></title>
+  <%%= stylesheet_link_tag    "application", media: "all" %>
+  <%%= javascript_include_tag "application" %>
+  <%%= csrf_meta_tags %>
+</head>
+<body>
+  <h1>Welcome to <%= app_name.humanize %></h1>
+
+  <%% flash.each do |name, msg| -%>
+    <%%= content_tag :div, msg, class: name %>
+  <%% end -%>
+
+  <%%= yield %>
+</body>
+</html>

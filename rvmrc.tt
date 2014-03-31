@@ -1,0 +1,6 @@
+if [[ -d "${rvm_path:-$HOME/.rvm}/environments" && \
+      -s "${rvm_path:-$HOME/.rvm}/environments/default@<%=app_name%>" ]] ; then
+  \. "${rvm_path:-$HOME/.rvm}/environments/default@<%=app_name%>"
+else
+  rvm --create use  "default@<%=app_name%>"
+fi

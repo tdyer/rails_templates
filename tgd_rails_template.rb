@@ -1,121 +1,50 @@
- Generate a rails app using this template
+#  Generate a rails app using this template
+
 #  rails new <app_name> -m tgd_rails_template.rb
 
 # This depends on gitignore file in the current dir.
 
-# This will create a:
-# .rvmrc
+# This will prompt to create a RVM gemset with a .rvmrc file:
 # Gemfile with the correct default gems. (Update this as needed)
-# Git ingnore file.
-# .gitignore
-# Foreman setup
-# Prompt to download and install Bootstrap
+# Git ignore file, .gitignore
+# Foreman setup (Not yet implemented)
+# Prompt to download and install Bootstrap (Not yet implemented)
 # Setup the default rails generators in config/application.rb
 # Prompt to download and install Devise
 # Setup Rspec for rails.
 # Create the config/database.yaml
 # Init and make initial commit
 
+# Add this current directory and the the rails_root dir to the
+# beginning of of the path that will be searched for files.
+def source_paths
+#     [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
+    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
+    Array(super)
+  # Array(super) will be rvm dir for app templates, .rvm/gems/ruby-2.0.0-p353/gems/railties-4.0.3/lib/rails/generators/rails/app/templates
+end
 
 ###################################
 # Create .rvmrc
 ###################################
 if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?")
-  create_file ".rvmrc", <<-RVMFILE
-  if [[ -d "\$\{rvm_path:-$HOME/.rvm\}/environments" && \
-   -s "\$\{rvm_path:-$HOME/.rvm\}/environments/ruby-2.0.0@#{app_name}" ]] ; then
-  \. "\$\{rvm_path:-$HOME/.rvm\}/environments/ruby-2.0.0@#{app_name}"
+  template('./rvmrc.tt','./.rvmrc', {app_name: app_name})
 else
-  rvm --create use  "ruby-2.0.0@#{app_name}"
-fi
-RVMFILE
+  puts "Using the default gemset"
+  run(". ${rvm_path:-$HOME/.rvm}/environments/default")
 end
 
 ###################################
-# Create Gemfile, check this periodically if you update rails
+# Use ./Gemfile, check this periodically if you update rails and gems
 ###################################
-copy_file 'Gemfile', 'Gemfile_orig'
 remove_file 'Gemfile'
-create_file 'Gemfile'
-
-add_source 'https://rubygems.org'
-
-# insert_into_file 'Gemfile', "\nruby '2.0.0'", after: "source 'https://rubygems.org'\n"
-
-gem 'rails', '4.0.2'
-# remove sqlite3
-# gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/,''
-gem 'sass-rails', '~> 4.0.0'
-gem 'uglifier', '>= 1.3.0'
-gem 'coffee-rails', '~> 4.0.0'
-gem 'jquery-rails'
-
-gem_group :doc do
-  gem 'sdoc', require: false
-end
-
-gem 'pg'
-gem 'dotenv-rails'
-gem 'time_difference'
-
-gem_group :production do
-  gem 'rails_12factor'
-end
-
-gem_group :development do
-  # Add model attributes
-  gem 'annotate'
-
-  # help to kill N+1 queries and unused eager loading
-  # https://github.com/flyerhzm/bullet. Needs config in development.rb
-  gem 'bullet'
-
-  # https://github.com/plentz/lol_dba
-  # list columns that should be indexed
-  gem 'lol_dba'
-
-  gem 'rails_best_practices', require: false
-
-  # Ruby/CLI: Automatic lossless reduction of all your images
-  gem 'smusher'
-end
-
-
-gem_group :test do
-  gem 'faker'
-  gem 'chronic'
-end
-
-gem_group :development, :test do
-  gem 'rspec-rails', '~> 3.0.0.beta'
-  gem 'database_cleaner'
-  gem 'shoulda-matchers'
-  gem 'guard-rspec', require: false
-
-  gem 'pry-rails'
-  gem 'pry-nav'
-  gem 'pry-stack_explorer'
-
-  # Turn off verbose logging of asset requests
-  gem 'quiet_assets'
-
-  # see Railscast for better_error gem
-  # http://railscasts.com/episodes/402-better-errors-railspanel
-  # FOR sublime text 3 MUST INSTALL sublime-url-protocol-mac, http://goo.gl/8KX1lb
-  # http://goo.gl/8KX1lb
-  gem 'better_errors'
-  gem 'binding_of_caller'
-
-  # Show a rails panel in Chrome. Requires a Chrome extension.
-  # https://github.com/dejan/rails_panel
-  gem 'meta_request'
-end
+copy_file 'Gemfile'
 
 ###################################
-# Create git ignore file.
+# Use ./gitignore in this rails app.
 ###################################
-copy_file "~/TomRepo/gitignore", '.gitignore'
-
+remove_file '.gitignore'
+copy_file '.gitignore'
 
 ###################################
 # Create foreman, for heroku deploy
@@ -131,8 +60,6 @@ copy_file "~/TomRepo/gitignore", '.gitignore'
 # run "echo '.env' >> .gitignore"
 # # We need this with foreman to see log output immediately
 # run "echo 'STDOUT.sync = true' >> config/environments/development.rb"
-
-
 
 ###################################
 # Set the application generators
@@ -152,29 +79,29 @@ application do
   APPCONFIG
 end
 
-
-# inject_into_file 'config/application.rb', :after => "class Application < Rails::Application" do
-#   <<-APPCONFIG
-#      # Customize generators config.generators
-#      config.generators do |g|     do |g|
-#        # g.stylesheets false
-#        # g.assets false
-#        g.controller_specs false
-#        g.view_specs false
-#        g.test_framework :rspec
-#        # g.form_builder :simple_form
-#        # g.fixture_replacement :factory_girl, :dir => 'spec/factories'
-#      end
-#   APPCONFIG
-# end
+###################################
+# Remove turbolinks from javascript manifest file
+###################################
+inside 'app' do
+  inside 'assets' do
+    inside 'javascripts' do
+      remove_file 'application.js'
+      template('application.js.tt', 'application.js')
+    end
+  end
+end
 
 ###################################
-# Remove turbolinks stuff
+# Remove turbolinks from layout, add flash
 ###################################
-puts "Removing Turbolinks"
-gsub_file 'app/assets/javascripts/application.js', /\/\/=\ require turbolinks/, ''
-# TODO: fix this
-#gsub_file 'app/views/layouts/application.html.erb', /\,\s+["|']data-turbolinks-track["|']\.*\%\>/, ''
+inside 'app' do
+  inside 'views' do
+    inside 'layouts' do
+      remove_file 'application.html.erb'
+      template('application.html.erb.tt', 'application.html.erb', { app_name: app_name})
+    end
+  end
+end
 
 ###################################
 # Setup and init RSpec
@@ -185,26 +112,9 @@ run "rspec --init"
 ###################################
 # Create database.yml
 ###################################
-remove_file 'config/database.yml'
-create_file 'config/database.yml' do
-  <<-YAML
-defaults: &defaults
-  adapter: postgresql
-  encoding: unicode
-  pool: 5
-
-development:
-  <<: *defaults
-  database: #{app_name}_development
-
-test:
-  <<: *defaults
-  database: #{app_name}_test
-
-production:
-  <<: *defaults
-  database: #{app_name}_production
-YAML
+inside 'config' do
+  remove_file('database.yml')
+  template('database.yml.tt', 'database.yml', { app_name: app_name})
 end
 
 ###################################
@@ -235,9 +145,20 @@ if yes?("Would you like to install Devise?")
 end
 
 ###################################
+# Bundle Install
+###################################
+run 'bundle install'
+
+###################################
+# Init the DB
+###################################
+rake("db:drop")
+rake("db:create")
+rake("db:migrate")
+
+###################################
 # Init and make initial commit
 ###################################
-
 git :init
 git add: "."
 git commit: %Q{ -m "Initial commit"}

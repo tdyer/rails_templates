@@ -1,0 +1,4 @@
+<% unless options[:skip_javascript] -%>
+//= require jquery
+//= require jquery_ujs
+<% end -%>

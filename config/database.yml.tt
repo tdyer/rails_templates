@@ -1,0 +1,16 @@
+defaults: &defaults
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+development:
+  <<: *defaults
+  database: <%=app_name%>_development
+
+test:
+  <<: *defaults
+  database: <%=app_name%>_test
+
+production:
+  <<: *defaults
+  database: <%=app_name%>_production

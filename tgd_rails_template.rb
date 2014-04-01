@@ -15,11 +15,11 @@
 # Create the config/database.yaml
 # Init and make initial commit
 
-# Add this current directory and the the rails_root dir to the
+# Add rails_root dir to the
 # beginning of of the path that will be searched for files.
 def source_paths
-    [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
-#    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
+  [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
+    #    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
     Array(super)
   # Array(super) will be rvm dir for app templates, .rvm/gems/ruby-2.0.0-p353/gems/railties-4.0.3/lib/rails/generators/rails/app/templates
 end
@@ -92,7 +92,7 @@ inside 'app' do
 end
 
 ###################################
-# Remove turbolinks from layout, add flash
+# Remove turbolinks from layout and add flash handling
 ###################################
 inside 'app' do
   inside 'views' do
@@ -163,7 +163,46 @@ git :init
 git add: "."
 git commit: %Q{ -m "Initial commit"}
 
+###################################
+# Create a remote repository.
+# NOTE: you MUST have a github api key in the api_keys.rb file
+###################################
+if yes?("Create a repository, \"#{app_name}\", in for this app")
+  # require 'dotenv'
+  # Dotenv.load
 
-# require 'ocktokit'
-# client = Octokit::Client.new(:access_token => self.access_token)
-# user = self.client.user
+  API_FILE = 'api_keys.rb'
+
+  # Load the file, github_api_key.rb, that contains the github api key.
+  # MAKE SURE YOU GIT IGNORE THIS FILE!!
+  load "#{File.join(File.expand_path(File.dirname(__FILE__)), API_FILE)}"
+  github_api_key = GITHUB_ACCESS_TOKEN
+  raise "Missing github api key" if github_api_key.nil? || github_api_key.empty?
+
+  require 'octokit'
+  client = Octokit::Client.new(access_token: github_api_key)
+  user = client.user
+
+  github_account_url =  "https://github.com/#{user.login}"
+  repo_url = "#{github_account_url}/#{app_name}"
+  puts "Adding repository #{app_name} to #{github_account_url}"
+
+  if client.create_repository(app_name, :private => false)
+    puts "Created Repository #{repo_url}"
+  else
+    puts "Error: Creating Repository #{repo_url}"
+  end
+
+  # add remote reference to this new repo
+  git remote: %Q( add origin git@github.com:#{user.login}/#{app_name}.git )
+
+  # sync with remote
+  git push: %Q{ -u origin master }
+
+  puts "Pushed to remote repository"
+
+  %x( open "https://github.com/#{user.login}/#{app_name}" )
+end
+
+
+puts "DONE "

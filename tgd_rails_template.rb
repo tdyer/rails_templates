@@ -1,6 +1,7 @@
 #  Generate a rails app using this template
+puts "Generating a Rails application with Tom's rails template"
 
-#  rails new <app_name> -m tgd_rails_template.rb
+#  rails new <app_name> -m rails new foo -m ~/TomRepo/rails_templates/tgd_rails_template.rb 
 
 # This depends on gitignore file in the current dir.
 
@@ -15,14 +16,26 @@
 # Create the config/database.yaml
 # Init and make initial commit
 
-# Add rails_root dir to the
-# beginning of of the path that will be searched for files.
+# The absolute path to this dir
+$LOCAL_PATH = File.dirname(File.realpath(__FILE__))
+puts "$LOCAL_PATH is #{$LOCAL_PATH}"
+
+# The absolute path to the rails_root dir
+$RR_PATH = File.join($LOCAL_PATH,'rails_root')
+puts "$RR_PATH is #{$LOCAL_PATH}"
+
+# This method will be called when looking for files that should be
+# copied, moved, etc in to the new rails app. It will determine where
+# to find those files.
 def source_paths
-  [File.join(File.expand_path(File.dirname(__FILE__)),'rails_root')] +
-    #    [File.join(File.expand_path(File.dirname(__FILE__)),'.')] +
-    Array(super)
-  # Array(super) will be rvm dir for app templates, .rvm/gems/ruby-2.0.0-p353/gems/railties-4.0.3/lib/rails/generators/rails/app/templates
+  puts "Getting the source paths"
+  # NOTE: the 
+  [$RR_PATH] + Array(super)
 end
+
+# Add the rails_root dir to the Ruby LOAD PATH
+$LOAD_PATH.unshift($RR_PATH)
+puts "Set the Ruby load path #{$LOAD_PATH}"
 
 ###################################
 # Create .rvmrc
@@ -37,19 +50,21 @@ end
 ###################################
 # Use ./Gemfile, check this periodically if you update rails and gems
 ###################################
+puts 'Setting the Gemfile'
 remove_file 'Gemfile'
 copy_file 'Gemfile'
 
 ###################################
 # Use ./gitignore in this rails app.
 ###################################
+puts 'Setting the .gitignore'
 remove_file '.gitignore'
 copy_file '.gitignore'
 
 ###################################
 # Create foreman, for heroku deploy
 ###################################
-
+# puts 'Setting up foreman'
 # Setting up foreman to deal with environment variables and services
 # https://github.com/ddollar/foreman
 # ==================================================

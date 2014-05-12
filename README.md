@@ -5,7 +5,7 @@ This is a Rails template I created for General Assembly's (GA) Web Development I
 
 
 To create a new Rails application that will use this template:
-rails new <app_name> -m tgd_rails_template.rb
+rails new <app_name> -m ~/TomRepo/rails_templates/tgd_rails_template.rb 
 
 It will: 
 * Prompt to create a RVM gemset for the app.

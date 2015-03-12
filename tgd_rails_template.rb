@@ -1,9 +1,9 @@
 #  Generate a rails app using this template
 puts "Generating a Rails application with Tom's rails template"
 
-#  rails new <app_name> -m rails new foo -m ~/TomRepo/rails_templates/tgd_rails_template.rb 
+#  rails new <app_name> -m  ~/TomRepo/rails_templates/tgd_rails_template.rb
 
-# This depends on gitignore file in the current dir.
+# This depends on the .gitignore file in the current dir.
 
 # This will prompt to create a RVM gemset with a .rvmrc file:
 # Gemfile with the correct default gems. (Update this as needed)
@@ -29,7 +29,6 @@ puts "$RR_PATH is #{$LOCAL_PATH}"
 # to find those files.
 def source_paths
   puts "Getting the source paths"
-  # NOTE: the 
   [$RR_PATH] + Array(super)
 end
 
@@ -48,11 +47,59 @@ else
 end
 
 ###################################
-# Use ./Gemfile, check this periodically if you update rails and gems
+# Update the Gemfile
 ###################################
 puts 'Setting the Gemfile'
-remove_file 'Gemfile'
-copy_file 'Gemfile'
+insert_into_file 'Gemfile', "\nruby '2.2.0'", after: "source 'https://rubygems.org'\n"
+
+gem 'newrelic_rpm'
+gem 'rack-cors'
+gem 'active_model_serializers', github: 'rails-api/active_model_serializers'
+gem 'nokogiri'
+gem 'time_difference'
+
+# add gems for dev & test env
+gem_group :development, :test do
+  gem 'capybara'
+  gem 'rubocop'
+  gem 'bullet'
+  gem 'lol_dba'
+  gem 'dotenv-rails'
+  gem 'rspec-rails', '~> 3.1.0'
+  gem 'pry-byebug'
+  gem 'pry-rails'
+  gem 'factory_girl_rails', '~> 4.0'
+  gem 'faker'
+  gem 'codeclimate-test-reporter', require: nil
+  gem 'annotate'
+  gem 'rails_best_practices'
+  gem 'chronic'
+  gem 'database_cleaner'
+  gem 'should-matchers'
+  gem 'quiet-assets'
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem 'meta_request'
+  gem 'rspec-its'
+end
+
+gem_group :development do
+  gem 'guard'
+  gem 'guard-rails'
+end
+
+# add gems for production env
+gem_group :production do
+  gem 'unicorn'
+  gem 'rails_12factor'
+  gem 'rails_stdout_logging'
+  gem 'rails_serve_static_assets'
+end
+
+# Remove comments
+gsub_file 'Gemfile', /[#].*/,''
+# Remove duplicate newlines
+gsub_file 'Gemfile', /[\n]+/,"\n"
 
 ###################################
 # Use ./gitignore in this rails app.

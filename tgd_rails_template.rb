@@ -111,6 +111,9 @@ gsub_file 'Gemfile', /[\n]+/,"\n"
 # remote sqlite
 gsub_file 'Gemfile', /gem \'sqlite3\'/, ''
 
+# Remove the test directory, we're using rspec
+%x{ rm -rf test}
+
 ###################################
 # Use ./gitignore in this rails app.
 ###################################

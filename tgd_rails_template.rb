@@ -37,9 +37,15 @@ $LOAD_PATH.unshift($RR_PATH)
 puts "Set the Ruby load path #{$LOAD_PATH}"
 
 ###################################
+# Use ./railsrc for rails new --help options
+###################################
+puts 'Setting the .railsrc'
+copy_file '.railsrc'
+
+###################################
 # Create .rvmrc
 ###################################
-if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?")
+if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?[y|yes] ")
   template('rvmrc.tt','.rvmrc', {app_name: app_name})
 else
   puts "Using the default gemset"
@@ -52,6 +58,7 @@ end
 puts 'Setting the Gemfile'
 insert_into_file 'Gemfile', "\nruby '2.2.0'", after: "source 'https://rubygems.org'\n"
 
+gem 'pg'
 gem 'newrelic_rpm'
 gem 'rack-cors'
 gem 'active_model_serializers', github: 'rails-api/active_model_serializers'
@@ -75,8 +82,8 @@ gem_group :development, :test do
   gem 'rails_best_practices'
   gem 'chronic'
   gem 'database_cleaner'
-  gem 'should-matchers'
-  gem 'quiet-assets'
+  gem 'shoulda-matchers'
+  gem 'quiet_assets'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'meta_request'
@@ -100,6 +107,9 @@ end
 gsub_file 'Gemfile', /[#].*/,''
 # Remove duplicate newlines
 gsub_file 'Gemfile', /[\n]+/,"\n"
+
+# remote sqlite
+gsub_file 'Gemfile', /gem \'sqlite3\'/, ''
 
 ###################################
 # Use ./gitignore in this rails app.
@@ -185,7 +195,7 @@ end
 #  Bootstrap: install from https://github.com/twbs/bootstrap
 # Note: This is 3.0.0
 # ==================================================
-if yes?("Download bootstrap?")
+if yes?("Download bootstrap?[y|yes] ")
   run "wget https://github.com/twbs/bootstrap/archive/v3.0.0.zip -O bootstrap.zip -O bootstrap.zip"
   run "unzip bootstrap.zip -d bootstrap && rm bootstrap.zip"
   run "cp bootstrap/bootstrap-3.0.0/dist/css/bootstrap.css vendor/assets/stylesheets/"
@@ -198,7 +208,7 @@ end
 ###################################
 # Install Devise?
 ###################################
-if yes?("Would you like to install Devise?")
+if yes?("Would you like to install Devise?[y|yes] ")
   gem "devise"
   generate "devise:install"
   model_name = ask("What would you like the user model to be called? [user]")
@@ -229,7 +239,7 @@ git commit: %Q{ -m "Initial commit"}
 # Create a remote repository.
 # NOTE: you MUST have a github api key in the api_keys.rb file
 ###################################
-if yes?("Create a repository, \"#{app_name}\", in for this app")
+if yes?("Create a repository, \"#{app_name}\", in for this app?[y|yes] ")
   # require 'dotenv'
   # Dotenv.load
 

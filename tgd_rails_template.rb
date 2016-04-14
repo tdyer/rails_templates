@@ -56,9 +56,10 @@ end
 # Update the Gemfile
 ###################################
 puts 'Setting the Gemfile'
-insert_into_file 'Gemfile', "\nruby '2.2.0'", after: "source 'https://rubygems.org'\n"
+insert_into_file 'Gemfile', "\nruby '2.3.0'", after: "source 'https://rubygems.org'\n"
 
-gem 'pg'
+# should be set in the .railsrc to use postgres
+# gem 'pg'
 gem 'newrelic_rpm'
 gem 'rack-cors'
 gem 'active_model_serializers', github: 'rails-api/active_model_serializers'
@@ -104,15 +105,16 @@ gem_group :production do
 end
 
 # Remove comments
-gsub_file 'Gemfile', /[#].*/,''
+# gsub_file 'Gemfile', /[#].*/,''
 # Remove duplicate newlines
 gsub_file 'Gemfile', /[\n]+/,"\n"
 
 # remote sqlite
-gsub_file 'Gemfile', /gem \'sqlite3\'/, ''
+# gsub_file 'Gemfile', /gem \'sqlite3\'/, ''
 
 # Remove the test directory, we're using rspec
-%x{ rm -rf test}
+# .railsrc has -T flag to skip TestUnit, shouldn't have test dirs/files
+# %x{ rm -rf test}
 
 ###################################
 # Use ./gitignore in this rails app.

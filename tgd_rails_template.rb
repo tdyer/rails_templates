@@ -18,24 +18,25 @@ puts "Generating a Rails application with Tom's rails template"
 
 # The absolute path to this dir
 $LOCAL_PATH = File.dirname(File.realpath(__FILE__))
-puts "$LOCAL_PATH is #{$LOCAL_PATH}"
+# puts "$LOCAL_PATH is #{$LOCAL_PATH}"
 
 # The absolute path to the rails_root dir
 $RR_PATH = File.join($LOCAL_PATH,'rails_root')
-puts "$RR_PATH is #{$LOCAL_PATH}"
+# puts "$RR_PATH is #{$LOCAL_PATH}"
 
 # This method will be called when looking for files that should be
 # copied, moved, etc in to the new rails app. It will determine where
 # to find those files.
 def source_paths
-  puts "Getting the source paths"
-  [$RR_PATH] + Array(super)
+  source_path = [$RR_PATH] + Array(super)
+  puts "source path = #{source_path}"
+  source_path
 end
+
 
 # Add the rails_root dir to the Ruby LOAD PATH
 $LOAD_PATH.unshift($RR_PATH)
-puts "Set the Ruby load path #{$LOAD_PATH}"
-
+# puts "Set the Ruby load path #{$LOAD_PATH}"
 ###################################
 # Use ./railsrc for rails new --help options
 ###################################
@@ -43,13 +44,19 @@ puts 'Setting the .railsrc'
 copy_file '.railsrc'
 
 ###################################
+# Create .ruby-version for rbenv
+###################################
+
+###################################
 # Create .rvmrc
 ###################################
-if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?[y|yes] ")
-  template('rvmrc.tt','.rvmrc', {app_name: app_name})
-else
-  puts "Using the default gemset"
-  run(". ${rvm_path:-$HOME/.rvm}/environments/default")
+if yes?("Are you using RVM?")
+  if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?[y|yes] ")
+    template('rvmrc.tt','.rvmrc', {app_name: app_name})
+  else
+    puts "Using the default gemset"
+    run(". ${rvm_path:-$HOME/.rvm}/environments/default")
+  end
 end
 
 ###################################
@@ -103,6 +110,9 @@ gem_group :production do
   gem 'rails_stdout_logging'
   gem 'rails_serve_static_assets'
 end
+
+# Add a comment to the Gemfile
+insert_into_file 'Gemfile', "\n# Production Gems\n", before: 'group :production do'
 
 # Remove comments
 # gsub_file 'Gemfile', /[#].*/,''
@@ -186,11 +196,19 @@ end
 run "echo '--format documentation' >> .rspec"
 run "rspec --init"
 
+
 ###################################
 # Create database.yml
 ###################################
+# copy the original database.yml
+copy_file("#{Dir.pwd}/config/database.yml", "#{Dir.pwd}/config/database_orig.yml")
+# NOTE: The Dir.pwd is the root dir for the new rails app!
+# !!! This will copy the template in rails_root/config/database.yml.tt !!!
+# copy_file("config/database.yml", "config/database_orig.yml")
+
 inside 'config' do
   remove_file('database.yml')
+  # generate a new database.yml from rails_root/config/database.yml.ttt
   template('database.yml.tt', 'database.yml', { app_name: app_name})
 end
 
@@ -224,7 +242,7 @@ end
 ###################################
 # Bundle Install
 ###################################
-run 'bundle install'
+# run 'bundle install'
 
 ###################################
 # Init the DB
@@ -281,5 +299,9 @@ if yes?("Create a repository, \"#{app_name}\", in for this app?[y|yes] ")
   %x( open "https://github.com/#{user.login}/#{app_name}" )
 end
 
+say <<-eos
+  ============================================================================
+  Your new Rails application is ready to go.
 
-puts "DONE "
+  Don't forget to scroll up for important messages from installed generators.
+eos

@@ -1,3 +1,5 @@
+require_relative 'lib/rbenv.rb'
+
 #  Generate a rails app using this template
 puts "Generating a Rails application with Tom's rails template"
 
@@ -33,10 +35,10 @@ def source_paths
   source_path
 end
 
-
 # Add the rails_root dir to the Ruby LOAD PATH
 $LOAD_PATH.unshift($RR_PATH)
 # puts "Set the Ruby load path #{$LOAD_PATH}"
+
 ###################################
 # Use ./railsrc for rails new --help options
 ###################################
@@ -44,26 +46,25 @@ puts 'Setting the .railsrc'
 copy_file '.railsrc'
 
 ###################################
-# Create .ruby-version for rbenv
+# Get Ruby version from rbenv
 ###################################
+ruby_version = TGDTemplate::RBENV.new.prompt_ruby_version
+puts "Using Ruby Version #{ruby_version}"
 
 ###################################
 # Create .rvmrc
 ###################################
-if yes?("Are you using RVM?")
-  if yes?("Would you like to create a RVM gemset, #{app_name}, for this app?[y|yes] ")
-    template('rvmrc.tt','.rvmrc', {app_name: app_name})
-  else
-    puts "Using the default gemset"
-    run(". ${rvm_path:-$HOME/.rvm}/environments/default")
-  end
+# Use rbenv if it's installed
+unless ruby_version
+  # otherwise use RVM
+  TGDTemplate::RVM.new(app_name)
 end
 
 ###################################
 # Update the Gemfile
 ###################################
 puts 'Setting the Gemfile'
-insert_into_file 'Gemfile', "\nruby '2.3.0'", after: "source 'https://rubygems.org'\n"
+insert_into_file 'Gemfile', "\nruby '#{ruby_version}'", after: "source 'https://rubygems.org'\n"
 
 # should be set in the .railsrc to use postgres
 # gem 'pg'

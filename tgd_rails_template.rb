@@ -228,20 +228,35 @@ end
 ###################################
 # Generate the Movie and Review resources?
 ###################################
-if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
+if yes?("Would you like to generate the Movie and Review resources? [y|yes] ")
   gem 'nested_scaffold'
   if $DEVISE_INSTALLED
 
     generate "scaffold Movie name:string rating:string desc:text length:integer user:references"
+    # TODO: Change this, Review should be a join btw movie and user!
+    generate 'nested_scaffold Movie/Review content:string movie:references'
+
+    # update the application controller.
+    remove_file 'app/controllers/application_controller.rb'
     template('app/controllers/application_controller.rb', 'app/controllers/application_controller.rb')
+
+    # update the movies controller and views.
+    remove_file 'app/controllers/movies_controller.rb'
     template('app/controllers/movies_controller.rb', 'app/controllers/movies_controller.rb')
-    insert_into_file 'app/models/user.rb', "\nhas_many :movies, dependent: :destroy\n", after: 'class User < ActiveRecord::Base'
+    remove_file 'app/views/movies/show.html.erb'
+    template 'app/views/movies/show.html.erb.tt'
+
+    # update the reviews views
+    remove_file 'app/views/reviews/show.html.erb'
+    template 'app/views/reviews/show.html.erb.tt'
+
+    insert_into_file 'app/models/user.rb', "\n  has_many :movies, dependent: :destroy\n", after: 'class User < ActiveRecord::Base'
 
   else
     generate 'scaffold Movie name:string rating:string desc:text length:integer'
+    generate 'nested_scaffold Movie/Review content:string movie:references'
   end
 
-  generate 'nested_scaffold Movie/Review content:string movie:references'
   insert_into_file 'config/routes.rb', "\nroot 'movies#index'\n", after: "Rails.application.routes.draw do"
 end
 

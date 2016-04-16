@@ -1,0 +1,34 @@
+<p>
+  <strong>Name:</strong>
+  <%%= @movie.name %>
+</p>
+
+<p>
+  <strong>Rating:</strong>
+  <%%= @movie.rating %>
+</p>
+
+<p>
+  <strong>Desc:</strong>
+  <%%= @movie.desc %>
+</p>
+
+<p>
+  <strong>Length:</strong>
+  <%%= @movie.length %>
+</p>
+
+<p>
+  <%%= link_to 'Edit Movie', edit_movie_path(@movie) %>
+<p>
+<p><%%= link_to 'Show All Movies', movies_path %></p>
+
+<p>
+  <%%= @movie.name %> has
+  <%%= link_to_unless(@movie.reviews.empty?, "#{@movie.reviews.size} reviews", movie_reviews_path(@movie.id)) do
+      "no reviews"
+   end
+  %>
+</p>
+
+<p>Create a <%%= link_to 'Review', new_movie_review_path(@movie.id) %></p>

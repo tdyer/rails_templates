@@ -1,0 +1,10 @@
+<header>
+  <h2>Review of <%%= link_to(@review.movie.name, movie_path(@movie)) %></h2>
+</header>
+
+<p>
+  <%%= @review.content %>
+</p>
+
+<%%= link_to 'Edit', edit_movie_review_path(@review.movie, @review) %> |
+<%%= link_to 'All Reviews for this movie', movie_reviews_path(@review.movie) %>

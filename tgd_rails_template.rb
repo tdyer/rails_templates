@@ -46,7 +46,7 @@ ruby_version = TGDTemplate::RBENV.new.prompt_ruby_version
 say  "Using Ruby Version #{ruby_version}", :magenta
 
 ###################################
-# Create .rvmrc
+# Create .rvmrc gemsets if not using rbenv
 ###################################
 # Use rbenv if it's installed
 unless ruby_version
@@ -113,20 +113,12 @@ insert_into_file 'Gemfile', "\n# Production Gems\n", before: 'group :production 
 # Remove duplicate newlines
 gsub_file 'Gemfile', /[\n]+/,"\n"
 
-# remote sqlite
-# gsub_file 'Gemfile', /gem \'sqlite3\'/, ''
-
-# Remove the test directory, we're using rspec
-# .railsrc has -T flag to skip TestUnit, shouldn't have test dirs/files
-# %x{ rm -rf test}
-
 ###################################
-# Use ./gitignore in this rails app.
+# Generate ./gitignore in new rails app.
 ###################################
 say 'Setting the .gitignore', :magenta
 remove_file '.gitignore'
 copy_file '.gitignore'
-
 
 ###################################
 # Create foreman, for heroku deploy
@@ -264,6 +256,11 @@ if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
   insert_into_file 'config/routes.rb', "\nroot 'movies#index'\n", after: "Rails.application.routes.draw do"
 end
 
+###################################
+# Run code in callback invoked AFTER bundle install
+# Depends on gems being installed.
+###################################
+
 after_bundle do
 
   ###################################
@@ -296,6 +293,7 @@ after_bundle do
   git commit: %Q{ -m "Initial commit"}
 
 end
+
 ###################################
 # Create a remote repository.
 # NOTE: you MUST have a github api key in the api_keys.rb file

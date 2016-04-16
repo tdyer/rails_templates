@@ -21,7 +21,7 @@ say "Generating a Rails application with Tom's rails template", :magenta
 # Create the config/database.yaml
 # Init and make initial commit
 
-# Set load paths for the below actions
+# Set paths,($PATH, ruby load path,...), for the below actions
 TGDTemplate::Path.set_paths
 
 # This method will used by Thor::Action methods when looking for
@@ -50,7 +50,7 @@ say  "Using Ruby Version #{ruby_version}", :magenta
 ###################################
 # Use rbenv if it's installed
 unless ruby_version
-  # otherwise use RVM
+  # otherwise use prompt for RVM info
   TGDTemplate::RVM.new(app_name)
 end
 
@@ -127,15 +127,6 @@ say 'Setting the .gitignore', :magenta
 remove_file '.gitignore'
 copy_file '.gitignore'
 
-###################################
-# Create initializer for the better_errors gem
-###################################
-# See https://github.com/charliesome/better_errors
-initializer("better_errors.rb") do
-  # e.g. in config/initializers/better_errors.rb
-  # Other preset values are [:mvim, :macvim, :textmate, :txmt, :tm, :sublime, :subl, :st]
-  # BetterErrors.editor = :subl
-end
 
 ###################################
 # Create foreman, for heroku deploy
@@ -258,8 +249,19 @@ if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
   generate 'nested_scaffold Movie/Review content:string movie:references'
 end
 
-
 after_bundle do
+
+  ###################################
+  # Create initializer for the better_errors gem
+  ###################################
+  # See https://github.com/charliesome/better_errors
+  initializer("better_errors.rb") do
+    # e.g. in config/initializers/better_errors.rb
+    # Other preset values are [:mvim, :macvim, :textmate, :txmt, :tm, :sublime, :subl, :st]
+    # TODO: this crashes the app template? fix.
+    # ::BetterErrors.editor = :subl
+  end
+
   ###################################
   # Init the DB
   ###################################

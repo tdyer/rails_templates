@@ -1,16 +1,19 @@
+require 'thor'
 require_relative 'lib/rbenv.rb'
+require_relative 'lib/path.rb'
 
 #  Generate a rails app using this template
-puts "Generating a Rails application with Tom's rails template"
+say "Generating a Rails application with Tom's rails template", :magenta
 
-#  rails new <app_name> -m  ~/TomRepo/rails_templates/tgd_rails_template.rb
+# rails new <app_name> -m  ~/TomRepo/rails_templates/tgd_rails_template.rb
 
-# This depends on the .gitignore file in the current dir.
+# This depends on the .gitignore file in the this repo's directory.
 
-# This will prompt to create a RVM gemset with a .rvmrc file:
-# Gemfile with the correct default gems. (Update this as needed)
-# Git ignore file, .gitignore
-# Foreman setup (Not yet implemented)
+# This script will:
+# Prompt to use a ruby version installed with rbenv.
+# Generate a Gemfile with the correct default gems. (Update this as needed)
+# Add a git ignore file, .gitignore, from rails_root/.gitignore
+# Add Foreman setup (Not yet implemented)
 # Prompt to download and install Bootstrap (Not yet implemented)
 # Setup the default rails generators in config/application.rb
 # Prompt to download and install Devise
@@ -18,38 +21,29 @@ puts "Generating a Rails application with Tom's rails template"
 # Create the config/database.yaml
 # Init and make initial commit
 
-# The absolute path to this dir
-$LOCAL_PATH = File.dirname(File.realpath(__FILE__))
-# puts "$LOCAL_PATH is #{$LOCAL_PATH}"
+# Set load paths for the below actions
+TGDTemplate::Path.set_paths
 
-# The absolute path to the rails_root dir
-$RR_PATH = File.join($LOCAL_PATH,'rails_root')
-# puts "$RR_PATH is #{$LOCAL_PATH}"
-
-# This method will be called when looking for files that should be
-# copied, moved, etc in to the new rails app. It will determine where
-# to find those files.
+# This method will used by Thor::Action methods when looking for
+# files that should be copied, moved, etc into the new rails app
+# from the ./rails_root directory.
 def source_paths
   source_path = [$RR_PATH] + Array(super)
-  puts "source path = #{source_path}"
+  # say  "source path = #{source_path}", :magenta
   source_path
 end
-
-# Add the rails_root dir to the Ruby LOAD PATH
-$LOAD_PATH.unshift($RR_PATH)
-# puts "Set the Ruby load path #{$LOAD_PATH}"
 
 ###################################
 # Use ./railsrc for rails new --help options
 ###################################
-puts 'Setting the .railsrc'
+say 'Setting the .railsrc', :magenta
 copy_file '.railsrc'
 
 ###################################
 # Get Ruby version from rbenv
 ###################################
 ruby_version = TGDTemplate::RBENV.new.prompt_ruby_version
-puts "Using Ruby Version #{ruby_version}"
+say  "Using Ruby Version #{ruby_version}", :magenta
 
 ###################################
 # Create .rvmrc
@@ -63,7 +57,7 @@ end
 ###################################
 # Update the Gemfile
 ###################################
-puts 'Setting the Gemfile'
+say 'Setting the Gemfile', :magenta
 insert_into_file 'Gemfile', "\nruby '#{ruby_version}'", after: "source 'https://rubygems.org'\n"
 
 # should be set in the .railsrc to use postgres
@@ -73,7 +67,6 @@ gem 'rack-cors'
 gem 'active_model_serializers', github: 'rails-api/active_model_serializers'
 gem 'nokogiri'
 gem 'time_difference'
-
 # add gems for dev & test env
 gem_group :development, :test do
   gem 'capybara'
@@ -130,9 +123,19 @@ gsub_file 'Gemfile', /[\n]+/,"\n"
 ###################################
 # Use ./gitignore in this rails app.
 ###################################
-puts 'Setting the .gitignore'
+say 'Setting the .gitignore', :magenta
 remove_file '.gitignore'
 copy_file '.gitignore'
+
+###################################
+# Create initializer for the better_errors gem
+###################################
+# See https://github.com/charliesome/better_errors
+initializer("better_errors.rb") do
+  # e.g. in config/initializers/better_errors.rb
+  # Other preset values are [:mvim, :macvim, :textmate, :txmt, :tm, :sublime, :subl, :st]
+  # BetterErrors.editor = :subl
+end
 
 ###################################
 # Create foreman, for heroku deploy
@@ -202,8 +205,8 @@ run "rspec --init"
 # Create database.yml
 ###################################
 # copy the original database.yml
-copy_file("#{Dir.pwd}/config/database.yml", "#{Dir.pwd}/config/database_orig.yml")
-# NOTE: The Dir.pwd is the root dir for the new rails app!
+copy_file("#{$APP_FULLPATH}/config/database.yml", "#{$APP_FULLPATH}/config/database_orig.yml")
+# NOTE: MUST use the full path for the root dir for the new, generated, rails app!
 # !!! This will copy the template in rails_root/config/database.yml.tt !!!
 # copy_file("config/database.yml", "config/database_orig.yml")
 
@@ -212,6 +215,11 @@ inside 'config' do
   # generate a new database.yml from rails_root/config/database.yml.ttt
   template('database.yml.tt', 'database.yml', { app_name: app_name})
 end
+
+###################################
+# Bundle Install
+###################################
+run 'bundle install'
 
 ###################################
 # Install Bootstrap?
@@ -241,24 +249,35 @@ if yes?("Would you like to install Devise?[y|yes] ")
 end
 
 ###################################
-# Bundle Install
+# Generate the Movie and Review resources?
 ###################################
-# run 'bundle install'
+if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
+  gem 'nested_scaffold'
 
-###################################
-# Init the DB
-###################################
-rake("db:drop")
-rake("db:create")
-rake("db:migrate")
+  generate 'scaffold Movie name:string rating:string desc:text length:integer'
+  generate 'nested_scaffold Movie/Review content:string movie:references'
+end
 
-###################################
-# Init and make initial commit
-###################################
-git :init
-git add: "."
-git commit: %Q{ -m "Initial commit"}
 
+after_bundle do
+  ###################################
+  # Init the DB
+  ###################################
+  # rake hangs if spring is not stopped!
+  %x{ spring stop }
+
+  rake("db:drop")
+  rake("db:create")
+  rake("db:migrate")
+
+  ###################################
+  # Init and make initial commit
+  ###################################
+  git :init
+  git add: "."
+  git commit: %Q{ -m "Initial commit"}
+
+end
 ###################################
 # Create a remote repository.
 # NOTE: you MUST have a github api key in the api_keys.rb file

@@ -16,23 +16,23 @@ module TGDTemplate
       def set_paths(verbose: false)
         # The absolute path to this dir
         local_path = File.dirname(File.expand_path("..", __FILE__))
-        say "local_path is #{local_path}", :magenta
+        say "local_path is #{local_path}", :magenta if verbose
 
         # The absolute path to the ./rails_root dir
         $RR_PATH = File.join(local_path,'rails_root')
-        say  "$RR_PATH is #{$RR_PATH}", :magenta unless verbose
+        say  "$RR_PATH is #{$RR_PATH}", :magenta if verbose
 
         # Add the ./rails_root dir to the Ruby LOAD PATH
         $LOAD_PATH.unshift($RR_PATH)
-        say "Ruby load path is #{$LOAD_PATH}", :magenta unless verbose
+        say "Ruby load path is #{$LOAD_PATH}", :magenta if verbose
 
         # The absolute path to the rails_root dir for the
         # generated application.
         $APP_FULLPATH = Dir.pwd
-        say"$APP_FULLPATH is #{$APP_FULLPATH}", :magenta unless verbose
+        say"$APP_FULLPATH is #{$APP_FULLPATH}", :magenta if verbose
 
         self.add_binstubs
-        self.show_path_var unless verbose
+        self.show_path_var if verbose
       end
 
       def show_path_var

@@ -237,18 +237,33 @@ if yes?("Would you like to generate the Movie and Review resources? [y|yes] ")
     generate 'nested_scaffold Movie/Review content:string movie:references'
 
     # update the application controller.
-    remove_file 'app/controllers/application_controller.rb'
-    template('app/controllers/application_controller.rb', 'app/controllers/application_controller.rb')
+    # remove_file 'app/controllers/application_controller.rb'
+    # template('app/controllers/application_controller.rb', 'app/controllers/application_controller.rb')
 
-    # update the movies controller and views.
-    remove_file 'app/controllers/movies_controller.rb'
-    template('app/controllers/movies_controller.rb', 'app/controllers/movies_controller.rb')
-    remove_file 'app/views/movies/show.html.erb'
-    template 'app/views/movies/show.html.erb.tt'
+    inside 'app' do
+      # controllers
+      inside 'controllers' do
+        remove_file 'application_controller.rb'
+        template('application_controller.rb', 'application_controller.rb')
+        remove_file 'movies_controller.rb'
+        template('movies_controller.rb', 'movies_controller.rb')
+      end
+      # views
+      inside 'views' do
+        inside 'movies' do
+          remove_file 'show.html.erb'
+          template 'show.html.erb.tt'
+        end
 
-    # update the reviews views
-    remove_file 'app/views/reviews/show.html.erb'
-    template 'app/views/reviews/show.html.erb.tt'
+        inside 'reviews' do
+          remove_file 'show.html.erb'
+          template 'show.html.erb.tt'
+        end
+      end
+    end
+
+#    remove_file 'app/views/reviews/show.html.erb'
+#    template 'app/views/reviews/show.html.erb.tt'
 
     insert_into_file 'app/models/user.rb', "\n  has_many :movies, dependent: :destroy\n", after: 'class User < ActiveRecord::Base'
 

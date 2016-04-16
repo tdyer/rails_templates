@@ -165,17 +165,6 @@ inside 'app' do
   end
 end
 
-###################################
-# Remove turbolinks from layout and add flash handling
-###################################
-inside 'app' do
-  inside 'views' do
-    inside 'layouts' do
-      remove_file 'application.html.erb'
-      template('application.html.erb.tt', 'application.html.erb', { app_name: app_name })
-    end
-  end
-end
 
 ###################################
 # Setup and init RSpec
@@ -254,6 +243,18 @@ if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
 
   generate 'nested_scaffold Movie/Review content:string movie:references'
   insert_into_file 'config/routes.rb', "\nroot 'movies#index'\n", after: "Rails.application.routes.draw do"
+end
+
+###################################
+# Remove turbolinks from layout and add flash handling
+###################################
+inside 'app' do
+  inside 'views' do
+    inside 'layouts' do
+      remove_file 'application.html.erb'
+      template('application.html.erb.tt', 'application.html.erb', { app_name: app_name, devise_installed: $DEVISE_INSTALLED })
+    end
+  end
 end
 
 ###################################

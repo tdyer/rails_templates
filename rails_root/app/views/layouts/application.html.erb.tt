@@ -9,6 +9,16 @@
 <body>
   <h1>Welcome to <%= app_name.humanize %></h1>
 
+  <!-- Show logged in user and links to register, authenticate and log out -->
+    <%% if user_signed_in? %>
+      <p>User <%%= current_user.email %> is signed in </p>
+      <%%= link_to "Sign Out", destroy_user_session_path, method: :delete %>
+    <%% else %>
+      <p>No User is signed in </p>
+      <%%= link_to "Sign In", new_user_session_path %>
+      <%%= link_to "Sign Up", new_user_registration_path %>
+    <%% end %>
+
   <%% flash.each do |name, msg| -%>
     <%%= content_tag :div, msg, class: name %>
   <%% end -%>

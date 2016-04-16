@@ -180,7 +180,7 @@ inside 'app' do
   inside 'views' do
     inside 'layouts' do
       remove_file 'application.html.erb'
-      template('application.html.erb.tt', 'application.html.erb', { app_name: app_name})
+      template('application.html.erb.tt', 'application.html.erb', { app_name: app_name })
     end
   end
 end
@@ -234,9 +234,14 @@ end
 if yes?("Would you like to install Devise?[y|yes] ")
   gem "devise"
   generate "devise:install"
-  model_name = ask("What would you like the user model to be called? [user]")
-  model_name = "user" if model_name.blank?
-  generate "devise", model_name
+
+  # model_name = ask("What would you like the user model to be called? [user]")
+  # model_name = "user" if model_name.blank?
+  # generate "devise", model_name
+  # Let's just always create a 'User' model, for now.
+  generate 'devise', 'User'
+
+  $DEVISE_INSTALLED = true
 end
 
 ###################################
@@ -244,9 +249,19 @@ end
 ###################################
 if yes?("Would you to generate the Movie and Review resources? [y|yes] ")
   gem 'nested_scaffold'
+  if $DEVISE_INSTALLED
 
-  generate 'scaffold Movie name:string rating:string desc:text length:integer'
+    generate "scaffold Movie name:string rating:string desc:text length:integer user:references"
+    template('app/controllers/application_controller.rb', 'app/controllers/application_controller.rb')
+    template('app/controllers/movies_controller.rb', 'app/controllers/movies_controller.rb')
+    insert_into_file 'app/models/user.rb', "\nhas_many :movies, dependent: :destroy\n", after: 'class User < ActiveRecord::Base'
+
+  else
+    generate 'scaffold Movie name:string rating:string desc:text length:integer'
+  end
+
   generate 'nested_scaffold Movie/Review content:string movie:references'
+  insert_into_file 'config/routes.rb', "\nroot 'movies#index'\n", after: "Rails.application.routes.draw do"
 end
 
 after_bundle do

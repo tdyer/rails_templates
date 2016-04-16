@@ -258,8 +258,9 @@ after_bundle do
   initializer("better_errors.rb") do
     # e.g. in config/initializers/better_errors.rb
     # Other preset values are [:mvim, :macvim, :textmate, :txmt, :tm, :sublime, :subl, :st]
-    # TODO: this crashes the app template? fix.
-    # ::BetterErrors.editor = :subl
+    if defined? BetterErrors
+      BetterErrors.editor = :subl
+    end
   end
 
   ###################################

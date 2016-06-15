@@ -1,0 +1,37 @@
+# See http://joanswork.com/rubocop-rails-getting-started/ for workflow
+
+# 1. generate the file, .rubocop_todo.yml, to exclude all current errors
+# $ rubocop --auto-gen-config
+#
+# 2. Create a .rubocop.yml file
+# $ touch .rubocop.yml
+#
+# 3. Inherit all the exclusions from the .rubocop_todo.yml file generated in 1.
+# by add this to the top of rubocop.yml
+# 'inherit_from: .rubocop_todo.yml'
+#
+# This will exclude all the errors in your project. `rubocop` should not show any
+# errors.
+# $ rubocop
+#
+# 4. Disable one error at a time in the .rubocop_todo.yml.
+# For example, include the unused method error/cop in the lib/rvm.rb file.:
+# Lint/UnusedMethodArgument:
+#   #Exclude:
+#   Include:
+#    - 'lib/rvm.rb'
+
+# 5. Run rubocop and fix the error/s.
+# Fix the UsedMethodArgument error in the 'lib/rvm.rb' file.
+#
+# 6. Go back to fix each Cop/error one at a time, step 4.
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  Exclude:
+    - 'rails_root/**/*'
+
+Metrics/LineLength:
+  Max: 80
+  Exclude:
+    - 'tgd_rails_template.rb'

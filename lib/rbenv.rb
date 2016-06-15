@@ -18,7 +18,8 @@ module TGDTemplate
       if @installed
         # rbenv is installed
         # Prompt for which of the installed ruby version to use.
-        @version = ask('Which version of Ruby do you want to use?', limited_to: installed_rubies)
+        @version = ask('Which version of Ruby do you want to use?',
+                       limited_to: installed_rubies)
       else
         # couldn't file the $HOME/.rbenv dir, rbenv is NOT installed
         say "Looks like you haven't installed rbenv?", :red

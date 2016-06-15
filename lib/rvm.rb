@@ -12,9 +12,12 @@ module TGDTemplate
       @app_name = app_name
     end # end initialize method
 
-    def prompt_ruby_version(exit_on_error: true)
+    # def prompt_ruby_version(exit_on_error: true)
+    def prompt_ruby_version
       if yes?("Are you using RVM?")
+        # rubocop:disable Metrics/LineLength
         if yes?("Would you like to create a RVM gemset, #{@app_name}, for this app?[y|yes] ")
+          # rubocop:enable Metrics/LineLength
           template('rvmrc.tt','.rvmrc', {app_name: @app_name})
         else
           puts "Using the default gemset"

@@ -22,7 +22,8 @@ say "Generating a Rails application with Tom's rails template", :magenta
 # Init and make initial commit
 
 # Set paths,($PATH, ruby load path,...), for the below actions
-TGDTemplate::Path.set_paths
+# TGDTemplate::Path.setup_paths verbose: true
+TGDTemplate::Path.setup_paths
 
 # This method will used by Thor::Action methods when looking for
 # files that should be copied, moved, etc into the new rails app
@@ -58,7 +59,8 @@ end
 # Update the Gemfile
 ###################################
 say 'Setting the Gemfile', :magenta
-insert_into_file 'Gemfile', "\nruby '#{ruby_version}'", after: "source 'https://rubygems.org'\n"
+insert_into_file 'Gemfile', "\nruby '#{ruby_version}'",
+                 after: "source 'https://rubygems.org'\n"
 
 # should be set in the .railsrc to use postgres
 # gem 'pg'
@@ -106,7 +108,8 @@ gem_group :production do
 end
 
 # Add a comment to the Gemfile
-insert_into_file 'Gemfile', "\n# Production Gems\n", before: 'group :production do'
+insert_into_file 'Gemfile', "\n# Production Gems\n",
+                 before: 'group :production do'
 
 # Remove comments
 # gsub_file 'Gemfile', /[#].*/,''
@@ -177,7 +180,8 @@ run "rspec --init"
 # Create database.yml
 ###################################
 # copy the original database.yml
-copy_file("#{$APP_FULLPATH}/config/database.yml", "#{$APP_FULLPATH}/config/database_orig.yml")
+copy_file("#{$APP_FULLPATH}/config/database.yml",
+          "#{$APP_FULLPATH}/config/database_orig.yml")
 # NOTE: MUST use the full path for the root dir for the new, generated, rails app!
 # !!! This will copy the template in rails_root/config/database.yml.tt !!!
 # copy_file("config/database.yml", "config/database_orig.yml")
